@@ -16,42 +16,36 @@ namespace TeamFunctionApp
 
         private class TeamMember
         {
+            public string Team { get; set; }
             public int branch { get; set; }
-            public int position { get; set; }
-            public string partner { get; set; }
+            public int City { get; set; }
+            public string Specialty { get; set; }
+            public int specialtyNo { get; set; }
+            public string Name { get; set; }
 
             public static List<TeamMember> LoadTeam()
             {
                 return new List<TeamMember>() {
-                    new TeamMember { branch = 622, position = 1, partner = "Marcus Morris Sr." },
-                    new TeamMember { branch = 622, position = 1, partner = "RJ Barrett" },
-                    new TeamMember { branch = 622, position = 1, partner = "Elfrid Payton" },
-                    new TeamMember { branch = 622, position = 1, partner = "Reggie Bullock" },
-                    new TeamMember { branch = 622, position = 2, partner = "Mitchell Robinson" },
-                    new TeamMember { branch = 622, position = 2, partner = "RJ Barrett" },
-                    new TeamMember { branch = 622, position = 2, partner = "Elfrid Payton" },
-                    new TeamMember { branch = 622, position = 2, partner = "Reggie Bullock" },
-                    new TeamMember { branch = 622, position = 3, partner = "Mitchell Robinson" },
-                    new TeamMember { branch = 622, position = 3, partner = "Marcus Morris Sr." },
-                    new TeamMember { branch = 622, position = 3, partner = "Elfrid Payton" },
-                    new TeamMember { branch = 622, position = 3, partner = "Reggie Bullock" },
-                    new TeamMember { branch = 622, position = 4, partner = "Mitchell Robinson" },
-                    new TeamMember { branch = 622, position = 4, partner = "Marcus Morris Sr." },
-                    new TeamMember { branch = 622, position = 4, partner = "RJ Barrett" },
-                    new TeamMember { branch = 622, position = 4, partner = "Reggie Bullock" },
-                    new TeamMember { branch = 622, position = 5, partner = "Mitchell Robinson" },
-                    new TeamMember { branch = 622, position = 5, partner = "Marcus Morris Sr." },
-                    new TeamMember { branch = 622, position = 5, partner = "RJ Barrett" },
-                    new TeamMember { branch = 622, position = 5, partner = "Elfrid Payton" },
+                    new TeamMember { Team = "Team 1", branch = 622, specialtyNo = 1, Specialty = "Insurance", Name = "Dinesh" },
+                    new TeamMember { Team = "Team 1", branch = 622, specialtyNo = 2, Specialty = "Annuity", Name = "Kai" },
+                    new TeamMember { Team = "Team 2", branch = 622, specialtyNo = 3, Specialty = "Alternative Investment", Name = "Jason" },
+                    new TeamMember { Team = "Team 2", branch = 622, specialtyNo = 4, Specialty = "UIT", Name = "Frank" },
+                    new TeamMember { Team = "Team 3", branch = 658, specialtyNo = 1, Specialty = "Insurance", Name = "Vivian" },
+                    new TeamMember { Team = "Team 3", branch = 658, specialtyNo = 2, Specialty = "Annuity", Name = "Abhishek" },
+                    new TeamMember { Team = "Team 4", branch = 658, specialtyNo = 3, Specialty = "Alternative Investment", Name = "Jolly" },
+                    new TeamMember { Team = "Team 4", branch = 658, specialtyNo = 4, Specialty = "UIT", Name = "Luz" },
+                    new TeamMember { Team = "Team 5", branch = 358, specialtyNo = 1, Specialty = "Insurance", Name = "Melanie" },
+                    new TeamMember { Team = "Team 1", branch = 358, specialtyNo = 3, Specialty = "Alternative Investment", Name = "Jeff" },
+                    new TeamMember { Team = "Team 1", branch = 358, specialtyNo = 4, Specialty = "UIT", Name = "Kevin" }
                 };
 
 
             }
-            public static List<TeamMember> FindMember(int branch, int position, List<TeamMember> team)
+            public static List<TeamMember> FindMember(int branch, int specialtyNo, List<TeamMember> team)
             {
                 List<TeamMember> suggested = new List<TeamMember>();
                 foreach(TeamMember tm in team ){
-                    if(tm.branch == branch && tm.position == position){
+                    if(tm.branch == branch && tm.specialtyNo == specialtyNo){
                         suggested.Add(tm);
                     }
                         
@@ -62,6 +56,25 @@ namespace TeamFunctionApp
                     return null;
 
             }
+
+            public static List<TeamMember> FindMemberbyName(string name, List<TeamMember> team)
+            {
+                List<TeamMember> suggested = new List<TeamMember>();
+                foreach (TeamMember tm in team)
+                {
+                    if (tm.Name == name)
+                    {
+                        suggested.Add(tm);
+                    }
+
+                }
+                if (suggested.Count > 0)
+                    return suggested;
+                else
+                    return null;
+
+            }
+
         }
         [FunctionName("GetTeamMatch")]
         public static async Task<IActionResult> Run(
@@ -69,16 +82,18 @@ namespace TeamFunctionApp
             ILogger log)
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
-            
-            string branch = req.Query["branch"];
-            string position = req.Query["position"];
+
+            string name = req.Query["name"];
+            //string branch = req.Query["branch"];
+            //string specialtyNo = req.Query["specialtyNo"];
 
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             dynamic data = JsonConvert.DeserializeObject(requestBody);
             //name = name ?? data?.name;
 
-            List<TeamMember> team = TeamMember.FindMember(Convert.ToInt32(branch), Convert.ToInt32(position), TeamMember.LoadTeam());
-            if(team != null && team.Count > 0)
+            //List<TeamMember> team = TeamMember.FindMember(Convert.ToInt32(branch), Convert.ToInt32(specialtyNo), TeamMember.LoadTeam());
+            List<TeamMember> team = TeamMember.FindMemberbyName(name, TeamMember.LoadTeam());
+            if (team != null && team.Count > 0)
                 return new OkObjectResult(team);
             else
                 return new BadRequestObjectResult("No suggested team match found");
